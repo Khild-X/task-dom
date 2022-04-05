@@ -5,6 +5,11 @@
   Считаем, что всегда передается тег, допускающий вставку текста в качестве своего содержимого (P, DIV, I и пр.).
 */
 export function appendToBody(tag, content, count) {
+    for (let i = 0; i < count; i++) {
+        const element = document.createElement(tag);
+        element.innerHTML = content;
+        document.body.append(element);
+    }
 }
 
 /*
@@ -15,6 +20,30 @@ export function appendToBody(tag, content, count) {
   Сформированное дерево верните в качестве результата работы функции.
 */
 export function generateTree(childrenCount, level) {
+    //Сначала создаю родительский элемент
+    const parentElement = document.createElement('div');
+    parentElement.className = 'item_1';
+    //Вспомогательная функция для создания дочерних элементов
+    let createChildElements = function (parentElement, childrenCount, level) {
+        for (let i = 0; i < childrenCount; i++) {
+            let childElement = parentElement.appendChild(
+                document.createElement('div'),
+            );
+            childElement.className = 'item_' + level;
+        }
+    };
+    //Создаю второй уровень дерева
+    createChildElements(parentElement, childrenCount, 2);
+    //По названию класса ищу элеметы и создаю у них дочерние элементы
+    for (let i = 3; i <= level; i++) {
+        let childrenElements = parentElement.querySelectorAll(
+            '.item_' + (i - 1),
+        );
+        for (let childElement of childrenElements) {
+            createChildElements(childElement, childrenCount, i);
+        }
+    }
+    return parentElement;
 }
 
 /*
@@ -26,4 +55,19 @@ export function generateTree(childrenCount, level) {
   Сформированное дерево верните в качестве результата работы функции.
 */
 export function replaceNodes() {
+    let tree = generateTree(2, 3);
+    let nodes = tree.querySelectorAll('.item_2');
+    //Вспомогательная функция для перемещения всех дочерних элементов заменямого узла в новый узел
+    let replaceChildren = function (node) {
+        let section = document.createElement('SECTION');
+        while (node.firstChild) {
+            section.appendChild(node.firstChild);
+            section.className = node.className;
+        }
+        tree.replaceChild(section, node);
+    };
+    for (let node of nodes) {
+        replaceChildren(node);
+    }
+    return tree;
 }
